@@ -1,7 +1,7 @@
 package service
 
 import (
-	"queue-services"
+	"github.com/liyuliang/queue-services"
 )
 
 func Start() {
@@ -9,6 +9,8 @@ func Start() {
 	initQueue()
 
 	services.AddSingleProcessTask("Pull Job", func(workerNum int) (err error) {
+
+
 		return
 	})
 
