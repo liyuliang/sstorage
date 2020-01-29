@@ -8,3 +8,12 @@ var (
 	SystemMysqlDatabase string = "mysql_database"
 	SystemMysqlCharset  string = "mysql_charset"
 )
+
+var (
+	SystemGateway = "gateway"
+)
+
+var (
+	GetApiPath = "/get"
+	QueueName  = "storage"
+)

@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/liyuliang/utils/format"
 	"github.com/liyuliang/sstorage/system"
+	"github.com/liyuliang/utils/format"
 	"github.com/liyuliang/sstorage/service"
 	"fmt"
 	"os"
 	"flag"
+	"github.com/liyuliang/sstorage/database"
 )
 
 func main() {
@@ -21,30 +22,23 @@ func main() {
 	//if current_queue_max_failed { next queue }
 	//if no_available_queue { hold on }
 	data := format.ToMap(map[string]string{
+		system.SystemGateway: g,
 	})
 
 	system.Init(data)
 
+	database.Init()
 	service.Start()
 }
 
 var (
-	a  string
-	p  string
-	g  string
-
-	maxError int
-	sleep    int
+	g string
 )
 
 func init() {
-	required := []string{"a", "g"}
+	required := []string{"g"}
 
-	flag.StringVar(&a, "a", "", "auth token")
 	flag.StringVar(&g, "g", "", "gateway url")
-	flag.StringVar(&p, "p", "8888", "web port")
-	flag.IntVar(&maxError, "e", 20, "maximum number of error in an hour then downgrade queue weight")
-	flag.IntVar(&sleep, "s", 300, "queue sleep seconeds")
 
 	flag.Parse()
 
