@@ -1,9 +1,10 @@
 package system
 
 import (
-	"sync"
 	"github.com/jinzhu/gorm"
 	_ "github.com/go-sql-driver/mysql"
+	"sync"
+	"log"
 )
 
 var mysqlHandler *mysqlDB
@@ -43,7 +44,8 @@ func (db *mysqlDB) conn() (*gorm.DB) {
 
 		conn, err := gorm.Open("mysql", username+":"+password+"@tcp("+host+":"+port+")/"+database+"?charset="+charset+"&parseTime=true&loc=Local")
 		if err != nil {
-			panic("failed to connect database " + err.Error())
+			log.Printf("%s,%s,%s,%s,%s,%s", username,password,host,port,database,charset)
+			panic("failed to connect database :" + err.Error())
 		}
 
 		//conn.LogMode(mysqlConfig.Debug)

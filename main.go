@@ -22,7 +22,13 @@ func main() {
 	//if current_queue_max_failed { next queue }
 	//if no_available_queue { hold on }
 	data := format.ToMap(map[string]string{
-		system.SystemGateway: g,
+		system.SystemGateway:       g,
+		system.SystemMysqlUserName: u,
+		system.SystemMysqlPwd:      p,
+		system.SystemMysqlHost:     h,
+		system.SystemMysqlPort:     P,
+		system.SystemMysqlDatabase: d,
+		system.SystemMysqlCharset:  c,
 	})
 
 	system.Init(data)
@@ -33,12 +39,24 @@ func main() {
 
 var (
 	g string
+	u string
+	p string
+	h string
+	P string
+	d string
+	c string
 )
 
 func init() {
 	required := []string{"g"}
 
 	flag.StringVar(&g, "g", "", "gateway url")
+	flag.StringVar(&u, "u", "root", "mysql username")
+	flag.StringVar(&p, "p", "", "mysql password")
+	flag.StringVar(&h, "h", "127.0.0.1", "mysql host")
+	flag.StringVar(&P, "P", "3306", "mysql port")
+	flag.StringVar(&d, "d", "test", "mysql database")
+	flag.StringVar(&c, "c", "UTF8", "mysql charset")
 
 	flag.Parse()
 
