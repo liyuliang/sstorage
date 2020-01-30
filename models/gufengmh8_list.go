@@ -43,3 +43,10 @@ func (m *gufengmh8_list) Sqls() []string {
 
 	}
 }
+
+func (m *gufengmh8_list) Extends() (jobs []Job) {
+
+
+
+	return
+}

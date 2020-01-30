@@ -19,13 +19,71 @@ func Start() {
 
 	services.AddSingleProcessTask("Pull Job", func(workerNum int) (err error) {
 
-		return execStorageQueueJobs()
-
+		err = execStorageJobs()
+		if err != nil {
+			return err //TODO
+		}
+		return err
 	})
 
 	services.Service().Start(true)
 }
-func execStorageQueueJobs() (err error) {
+
+func execStorageJobs() (err error) {
+
+	html, err := getJobsContent()
+	if err != nil {
+		return err
+	}
+
+	model := htmlToModel(html)
+
+	err = checkModel(model)
+	if err != nil {
+		return err
+	}
+
+	save(model.Sqls())
+	extend(model.Extends())
+	//esIndex(model.)
+
+	return //TODO return
+}
+
+
+func save(sqls []string) {
+	db := system.Mysql()
+	tx := db.Begin()
+
+	for _, sql := range sqls {
+		tx.Exec(sql)
+	}
+
+	tx.Commit()
+}
+
+func extend(jobs []models.Job) {
+	for _, job := range jobs {
+		extendJob(job)
+	}
+}
+
+func extendJob(job models.Job) (html string, err error) {
+
+	gateway := system.Config()[system.SystemGateway]
+	queueAddApi := gateway + system.AddApiPath
+
+	vals := url.Values{}
+	vals.Add("type", job.Type)
+	vals.Add("token", job.Token)
+
+	for _, url := range job.Urls {
+		vals.Add("[]url", url)
+	}
+	return request.HttpPost(queueAddApi, vals)
+}
+func getJobsContent() (html string, err error) {
+
 	gateway := system.Config()[system.SystemGateway]
 	queueGetApi := gateway + system.GetApiPath
 
@@ -34,30 +92,7 @@ func execStorageQueueJobs() (err error) {
 		"n":     "1",
 	})
 
-	html, err := request.HttpPost(queueGetApi, data.ToUrlVals())
-
-	if err != nil {
-		return
-	}
-
-	model := formatResponseData(html)
-
-	err = checkModel(model)
-	if err != nil {
-
-		return err
-		//TODO
-	}
-
-	db := system.Mysql()
-	tx := db.Begin()
-
-	for _, sql := range model.Sqls() {
-		tx.Exec(sql)
-	}
-
-	tx.Commit()
-	return //TODO return
+	return request.HttpPost(queueGetApi, data.ToUrlVals())
 }
 
 func checkModel(model models.Model) (err error) {
@@ -67,7 +102,7 @@ func checkModel(model models.Model) (err error) {
 	return
 }
 
-func formatResponseData(html string) (model models.Model) {
+func htmlToModel(html string) (model models.Model) {
 	host := "http://127.0.0.1"
 	u := host + "?" + html
 	p, e := url.Parse(u)

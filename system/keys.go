@@ -14,6 +14,7 @@ var (
 )
 
 var (
+	AddApiPath = "/add"
 	GetApiPath = "/get"
 	QueueName  = "storage"
 )
