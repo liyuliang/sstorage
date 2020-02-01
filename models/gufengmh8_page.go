@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 	"strings"
+	"log"
 )
 
 func init() {
@@ -29,8 +30,15 @@ func (m *gufengmh8_page) Name() string {
 }
 
 func (m *gufengmh8_page) Sqls() []string {
+
 	t := new(database.Chapter)
 	access.Set(t, m)
+
+	field, exist := CheckStructExistEmptyVal(t)
+	if exist {
+		log.Printf("Field %s of table chapter is empty, can't insert into db", field)
+		return []string{}
+	}
 
 	fields := getTableFields(t)
 
@@ -38,7 +46,7 @@ func (m *gufengmh8_page) Sqls() []string {
 		`INSERT INTO %s (%s)
 SELECT '%s', '%s', '%s', '%s', '%s', '%s', %d FROM dual WHERE NOT EXISTS
 (SELECT %s FROM %s 
-WHERE site = '%s' AND number = '%s' AND chapter = '%s'
+WHERE code = '%s' AND number = '%s' AND chapter = '%s'
 )`,
 		t.TableName(),
 		fields,

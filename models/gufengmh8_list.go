@@ -6,6 +6,7 @@ import (
 	"time"
 	"github.com/liyuliang/utils/format"
 	"fmt"
+	"log"
 )
 
 func init() {
@@ -33,6 +34,12 @@ func (m *gufengmh8_list) Sqls() []string {
 
 	t := new(database.Book)
 	access.Set(t, m)
+
+	field, exist := CheckStructExistEmptyVal(t)
+	if exist {
+		log.Printf("Field %s of table chapter is empty, can't insert into db", field)
+		return []string{}
+	}
 
 	fields := getTableFields(t)
 
