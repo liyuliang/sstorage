@@ -44,7 +44,7 @@ func (db *mysqlDB) conn() (*gorm.DB) {
 
 		conn, err := gorm.Open("mysql", username+":"+password+"@tcp("+host+":"+port+")/"+database+"?charset="+charset+"&parseTime=true&loc=Local")
 		if err != nil {
-			log.Printf("%s,%s,%s,%s,%s,%s", username,password,host,port,database,charset)
+			log.Printf("%s,%s,%s,%s,%s", username, host, port, database, charset)
 			panic("failed to connect database :" + err.Error())
 		}
 
@@ -56,9 +56,9 @@ func (db *mysqlDB) conn() (*gorm.DB) {
 }
 
 func (db *mysqlDB) CreateTable(table interface{}) (err error) {
-
+	db.conn().SingularTable(true)
 	if !db.conn().HasTable(table) {
-		err = db.conn().CreateTable(table).Error
+		err = db.conn().Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").CreateTable(table).Error
 	}
 	return err
 }

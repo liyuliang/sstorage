@@ -9,6 +9,8 @@ import (
 	"net/url"
 	"access"
 	"github.com/pkg/errors"
+	"log"
+	"strings"
 )
 
 var ms models.Models
@@ -36,9 +38,7 @@ func execStorageJobs() (err error) {
 		return err
 	}
 
-	model := htmlToModel(html)
-
-	err = checkModel(model)
+	model, err := htmlToModel(html)
 	if err != nil {
 		return err
 	}
@@ -50,9 +50,9 @@ func execStorageJobs() (err error) {
 	return //TODO return
 }
 
-
 func save(sqls []string) {
 	db := system.Mysql()
+
 	tx := db.Begin()
 
 	for _, sql := range sqls {
@@ -62,13 +62,15 @@ func save(sqls []string) {
 	tx.Commit()
 }
 
-func extend(jobs []models.Job) {
+func extend(jobs []*models.Job) {
+	log.Println(len(jobs))
+
 	for _, job := range jobs {
 		extendJob(job)
 	}
 }
 
-func extendJob(job models.Job) (html string, err error) {
+func extendJob(job *models.Job) (html string, err error) {
 
 	gateway := system.Config()[system.SystemGateway]
 	queueAddApi := gateway + system.AddApiPath
@@ -77,11 +79,12 @@ func extendJob(job models.Job) (html string, err error) {
 	vals.Add("type", job.Type)
 	vals.Add("token", job.Token)
 
-	for _, url := range job.Urls {
-		vals.Add("[]url", url)
+	for _, u := range job.Urls {
+		vals.Add("[]url", u)
 	}
 	return request.HttpPost(queueAddApi, vals)
 }
+
 func getJobsContent() (html string, err error) {
 
 	gateway := system.Config()[system.SystemGateway]
@@ -92,7 +95,11 @@ func getJobsContent() (html string, err error) {
 		"n":     "1",
 	})
 
-	return request.HttpPost(queueGetApi, data.ToUrlVals())
+	html, err = request.HttpPost(queueGetApi, data.ToUrlVals())
+	if html == "" {
+		return "", errors.New("Empty Queue ...")
+	}
+	return
 }
 
 func checkModel(model models.Model) (err error) {
@@ -102,24 +109,33 @@ func checkModel(model models.Model) (err error) {
 	return
 }
 
-func htmlToModel(html string) (model models.Model) {
+func htmlToModel(html string) (model models.Model, err error) {
+	html = strings.Replace(html, "[\"", "", -1)
+	html = strings.Replace(html, "\"]", "", -1)
+	html = strings.Replace(html, "\\u0026", "&", -1)
+	html, _ = url.QueryUnescape(html)
+
+	html = removeLineBreak(html)
+
 	host := "http://127.0.0.1"
 	u := host + "?" + html
 	p, e := url.Parse(u)
 	if e != nil {
-		return
+		log.Println(e.Error())
+		return nil, err
 	}
 
 	params := p.Query()
 
 	modelName, err := modelNameFromQueryParam(params)
 	if err != nil {
-		return
+		log.Println(err.Error())
+		return nil, err
 	}
 
 	modelCreator := models.Get(modelName)
 	if modelCreator == nil {
-		return
+		return nil, err
 	}
 
 	model = modelCreator()
@@ -133,7 +149,13 @@ func htmlToModel(html string) (model models.Model) {
 			access.SetField(model, k, vs)
 		}
 	}
-	return model
+
+	err = checkModel(model)
+	if err != nil {
+		return nil, err
+	}
+
+	return model, nil
 }
 
 func modelNameFromQueryParam(vs url.Values) (modelName string, err error) {
@@ -152,4 +174,11 @@ func modelNameFromQueryParam(vs url.Values) (modelName string, err error) {
 func initQueue() {
 
 	ms = models.List()
+}
+
+func removeLineBreak(v string) string {
+	v = strings.Replace(v, "\n", "", -1)
+	v = strings.Replace(v, "\t", "", -1)
+	v = strings.Replace(v, " ", "", -1)
+	return v
 }

@@ -11,11 +11,9 @@ func Init() {
 
 	initDatabase()
 	initTables()
-
 }
 
 func initDatabase() {
-
 	//TODO
 }
 
@@ -32,16 +30,16 @@ func initTables() {
 			db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").CreateTable(t)
 			log.Println("done.")
 		} else {
-			log.Printf("table %s exist.", table)
+			log.Printf("Table %s exist.", table)
 		}
 	}
 }
 
-type table interface {
+type Table interface {
 	TableName() string
 }
 
-type Creator func() table
+type Creator func() Table
 
 var _list []Creator
 

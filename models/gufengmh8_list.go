@@ -3,6 +3,9 @@ package models
 import (
 	"github.com/liyuliang/sstorage/database"
 	"access"
+	"time"
+	"github.com/liyuliang/utils/format"
+	"fmt"
 )
 
 func init() {
@@ -14,7 +17,7 @@ func init() {
 type gufengmh8_list struct {
 	Code     string
 	Database string
-	Desc     string
+	Intro    string
 	Face     string
 	Number   string
 	Url      string
@@ -28,25 +31,53 @@ func (m *gufengmh8_list) Name() string {
 
 func (m *gufengmh8_list) Sqls() []string {
 
-	b := new(database.Book)
-	access.Set(b, m)
+	t := new(database.Book)
+	access.Set(t, m)
 
-	var chapters []*database.Chapter
-	for _, url := range m.Pages {
+	fields := getTableFields(t)
 
-		chapter := new(database.Chapter)
-		chapter.Url = url
-		chapters = append(chapters, chapter)
-	}
+	sql := fmt.Sprintf(
+		`INSERT INTO %s (%s)
+SELECT '%s', '%s', '%s', '%s', '%s', '%s', %d FROM dual WHERE NOT EXISTS
+(SELECT %s FROM %s 
+WHERE code = '%s' AND number = '%s'
+)`,
+		t.TableName(),
+		fields,
+
+		t.Code,
+		t.Number,
+		t.Url,
+		t.Title,
+		t.Face,
+		t.Intro,
+		time.Now().Unix(),
+
+		fields,
+		t.TableName(),
+
+		t.Code,
+		t.Number,
+	)
 
 	return []string{
-
+		sql,
 	}
 }
 
-func (m *gufengmh8_list) Extends() (jobs []Job) {
+func (m *gufengmh8_list) Extends() (jobs []*Job) {
 
+	j := new(Job)
+	j.Type = "page" //TODO
+	j.Token = format.Int64ToStr(time.Now().UnixNano())
 
+	for _, url := range m.Pages {
 
-	return
+		if url != "" {
+			j.Urls = append(j.Urls, url)
+		}
+	}
+
+	jobs = append(jobs, j)
+	return jobs
 }

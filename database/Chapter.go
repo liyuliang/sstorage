@@ -1,18 +1,19 @@
 package database
 
 func init() {
-	Register(func() table {
+	Register(func() Table {
 		return new(Chapter)
 	})
 }
 
 type Chapter struct {
-	Code       string
-	Number     string
-	Chapter    string
+	Code       string `gorm:"index:code"`
+	Number     string `gorm:"index:number"`
+	Chapter    string `gorm:"index:chapter"`
 	Url        string
 	Title      string
-	UpdateTime int64
+	Imgs       string `gorm:"Column:imgs"`
+	UpdateTime int64  `gorm:"Column:updateTime"`
 }
 
 func (t *Chapter) TableName() string {

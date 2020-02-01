@@ -9,7 +9,7 @@ type Model interface {
 	Name() string
 	Sqls() []string
 
-	Extends() []Job
+	Extends() []*Job
 }
 
 type Creator func() Model
