@@ -7,7 +7,7 @@ import (
 	"github.com/liyuliang/utils/request"
 	"github.com/liyuliang/utils/format"
 	"net/url"
-	"access"
+	"github.com/liyuliang/access"
 	"github.com/pkg/errors"
 	"log"
 	"strings"
