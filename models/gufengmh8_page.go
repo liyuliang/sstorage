@@ -2,7 +2,7 @@ package models
 
 import (
 	"github.com/liyuliang/sstorage/database"
-	"access"
+	"github.com/liyuliang/access"
 	"fmt"
 	"time"
 	"strings"
