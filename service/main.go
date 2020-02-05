@@ -7,10 +7,11 @@ import (
 	"github.com/liyuliang/utils/request"
 	"github.com/liyuliang/utils/format"
 	"net/url"
-	"access"
 	"github.com/pkg/errors"
 	"log"
 	"strings"
+	"time"
+	"github.com/liyuliang/access"
 )
 
 var ms models.Models
@@ -23,9 +24,12 @@ func Start() {
 
 		err = execStorageJobs()
 		if err != nil {
-			return err //TODO
+			//TODO
+			sleep := 10
+			time.Sleep(format.IntToTimeSecond(sleep))
+			return nil
 		}
-		return err
+		return
 	})
 
 	services.Service().Start(true)
@@ -52,7 +56,10 @@ func execStorageJobs() (err error) {
 
 func save(sqls []string) {
 	db := system.Mysql()
+	for _, sql := range sqls {
+		results, err := db.QueryString(sql)
 
+	}
 	tx := db.Begin()
 
 	for _, sql := range sqls {
@@ -63,7 +70,6 @@ func save(sqls []string) {
 }
 
 func extend(jobs []*models.Job) {
-	log.Println(len(jobs))
 
 	for _, job := range jobs {
 		extendJob(job)
@@ -119,6 +125,7 @@ func htmlToModel(html string) (model models.Model, err error) {
 
 	host := "http://127.0.0.1"
 	u := host + "?" + html
+
 	p, e := url.Parse(u)
 	if e != nil {
 		log.Println(e.Error())

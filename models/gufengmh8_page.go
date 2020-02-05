@@ -34,6 +34,8 @@ func (m *gufengmh8_page) Sqls() []string {
 	t := new(database.Chapter)
 	access.Set(t, m)
 
+	t.Imgs = strings.Join(m.Imgs, ",")
+
 	field, exist := CheckStructExistEmptyVal(t)
 	if exist {
 		log.Printf("Field %s of table chapter is empty, can't insert into db", field)
@@ -51,21 +53,22 @@ WHERE code = '%s' AND number = '%s' AND chapter = '%s'
 		t.TableName(),
 		fields,
 
-		m.Code,
-		m.Number,
-		m.Chapter,
-		filterVal(m.Title),
-		filterVal(m.Url),
-		strings.Join(m.Imgs, ","),
+		t.Code,
+		t.Number,
+		t.Chapter,
+		filterVal(t.Url),
+		filterVal(t.Title),
+		t.Imgs,
 		time.Now().Unix(),
 
 		fields,
 		t.TableName(),
 
-		m.Code,
-		m.Number,
-		m.Chapter,
+		t.Code,
+		t.Number,
+		t.Chapter,
 	)
+
 	return []string{
 		sql,
 	}

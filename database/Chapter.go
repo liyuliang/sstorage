@@ -7,13 +7,13 @@ func init() {
 }
 
 type Chapter struct {
-	Code       string `gorm:"index:code"`
-	Number     string `gorm:"index:number"`
-	Chapter    string `gorm:"index:chapter"`
+	Code       string `xorm:"index"`
+	Number     string `xorm:"index"`
+	Chapter    string `xorm:"index"`
 	Url        string
 	Title      string
-	Imgs       string `gorm:"Column:imgs"`
-	UpdateTime int64  `gorm:"Column:updateTime"`
+	Imgs       string `xorm:"'imgs'"`
+	UpdateTime int64  `xorm:"'updateTime'"`
 }
 
 func (t *Chapter) TableName() string {

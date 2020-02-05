@@ -1,22 +1,19 @@
 package system
 
 import (
-	"github.com/jinzhu/gorm"
 	_ "github.com/go-sql-driver/mysql"
-	"sync"
+	"github.com/liyuliang/xorm"
+	"fmt"
 	"log"
 )
 
 var mysqlHandler *mysqlDB
 
 type mysqlDB struct {
-	username  string
-	password  string
-	mutex     *sync.RWMutex
-	connector *gorm.DB
+	connector *xorm.Engine
 }
 
-func Mysql() (*gorm.DB) {
+func Mysql() (*xorm.Engine) {
 	if mysqlHandler == nil {
 		mysqlHandler = newMysql()
 	}
@@ -26,12 +23,11 @@ func Mysql() (*gorm.DB) {
 func newMysql() *mysqlDB {
 
 	mysqlHandler = new(mysqlDB)
-	mysqlHandler.mutex = new(sync.RWMutex)
 	mysqlHandler.conn()
 	return mysqlHandler
 }
 
-func (db *mysqlDB) conn() (*gorm.DB) {
+func (db *mysqlDB) conn() (*xorm.Engine) {
 
 	if db.connector == nil {
 
@@ -42,23 +38,28 @@ func (db *mysqlDB) conn() (*gorm.DB) {
 		database := Config()[SystemMysqlDatabase]
 		charset := Config()[SystemMysqlCharset]
 
-		conn, err := gorm.Open("mysql", username+":"+password+"@tcp("+host+":"+port+")/"+database+"?charset="+charset+"&parseTime=true&loc=Local")
+		uri := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s", username, password, host, port, database, charset)
+
+		engine, err := xorm.NewEngine("mysql", uri)
+
+		//conn, err := gorm.Open("mysql", username+":"+password+"@tcp("+host+":"+port+")/"+database+"?charset="+charset+"&parseTime=true&loc=Local")
 		if err != nil {
 			log.Printf("%s,%s,%s,%s,%s", username, host, port, database, charset)
 			panic("failed to connect database :" + err.Error())
 		}
 
 		//conn.LogMode(mysqlConfig.Debug)
-		db.connector = conn
+		db.connector = engine
 	}
 
 	return db.connector
 }
 
 func (db *mysqlDB) CreateTable(table interface{}) (err error) {
-	db.conn().SingularTable(true)
-	if !db.conn().HasTable(table) {
-		err = db.conn().Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").CreateTable(table).Error
-	}
+	err = db.conn().Sync2(table)
+	//db.conn().SingularTable(true)
+	//if !db.conn().HasTable(table) {
+	//	err = db.conn().Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").CreateTable(table).Error
+	//}
 	return err
 }

@@ -4,7 +4,6 @@ import (
 	"sync"
 	"strings"
 	"github.com/liyuliang/sstorage/system"
-	"log"
 )
 
 func Init() {
@@ -19,19 +18,19 @@ func initDatabase() {
 
 func initTables() {
 	db := system.Mysql()
-	db.SingularTable(true)
+	//db.SingularTable(true)
 
 	for _, creator := range List() {
-		t := creator()
+		table := creator()
 
-		table := t.TableName()
-
-		if !db.HasTable(table) {
-			db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").CreateTable(t)
-			log.Println("done.")
-		} else {
-			log.Printf("Table %s exist.", table)
-		}
+		db.Sync2(table)
+		//table := t.TableName()
+		//if !db.HasTable(table) {
+		//	db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").CreateTable(t)
+		//	log.Println("done.")
+		//} else {
+		//	log.Printf("Table %s exist.", table)
+		//}
 	}
 }
 
