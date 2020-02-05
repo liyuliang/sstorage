@@ -4,7 +4,7 @@ import (
 	"github.com/liyuliang/sstorage/database"
 	"strings"
 	"reflect"
-	"access"
+	"github.com/liyuliang/access"
 )
 
 type Job struct {
